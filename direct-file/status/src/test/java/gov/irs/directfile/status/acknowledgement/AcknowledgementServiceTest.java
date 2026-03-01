@@ -18,10 +18,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import gov.irs.a2a.mef.mefheader.TestCdType;
 import gov.irs.mef.exception.ServiceException;
 import gov.irs.mef.exception.ToolkitException;
-import gov.irs.mef.services.ServiceContext;
 import gov.irs.mef.services.transmitter.mtom.GetAcksResult;
 
 import gov.irs.directfile.models.RejectedStatus;
@@ -749,44 +747,11 @@ class AcknowledgementServiceTest {
         assertEquals("Could not find completed record for submission ID: " + submissionId, thrown.getMessage());
     }
 
-    @Test
-    void whenCreateServiceContextWrapper_WithPodIdentifiers_ThenReturnsAsidFromDatabase() {
-        PodIdentifier p = createPodIdentifer("us-gov-east-1", statusProperties.getAsid(), 0);
-        podIdentifierRepository.save(p);
+    // Removed: createServiceContextWrapper() no longer exists on AcknowledgementService (moved to
+    // MeFLoginClientService)
 
-        String asid = podIdentifierRepository.findAsidByPodId(p.getPodId()).get();
-
-        ServiceContextWrapper serviceContextWrapper = acknowledgementService.createServiceContextWrapper();
-        ServiceContext serviceContext = serviceContextWrapper.getServiceContext();
-        assertNotNull(serviceContextWrapper);
-        assertNotNull(serviceContextWrapper.getServiceContext());
-        assertEquals(serviceContext.getAppSysID(), statusProperties.getAsid());
-        assertEquals(serviceContext.getAppSysID(), asid);
-        assertEquals(serviceContext.getEtin().toString(), statusProperties.getEtin());
-        assertEquals(serviceContext.getTestCdType(), TestCdType.T);
-    }
-
-    @Test
-    void whenCreateServiceContextWrapper_WithMultiplePodIdentifiers_ThenReturnsCorrectAsid() {
-        PodIdentifier p1 = createPodIdentifer("us-gov-east-1", ASID, 2);
-        PodIdentifier p2 = createPodIdentifer("us-gov-east-1", ASID + "2", 1);
-        PodIdentifier p3 = createPodIdentifer("us-gov-east-1", statusProperties.getAsid(), 0);
-        podIdentifierRepository.save(p1);
-        podIdentifierRepository.save(p2);
-        podIdentifierRepository.save(p3);
-
-        String correctAsid =
-                podIdentifierRepository.findAsidByPodId(p3.getPodId()).get();
-
-        ServiceContextWrapper serviceContextWrapper = acknowledgementService.createServiceContextWrapper();
-        ServiceContext serviceContext = serviceContextWrapper.getServiceContext();
-        assertNotNull(serviceContextWrapper);
-        assertNotNull(serviceContextWrapper.getServiceContext());
-        assertEquals(serviceContext.getAppSysID(), statusProperties.getAsid());
-        assertEquals(serviceContext.getAppSysID(), correctAsid);
-        assertEquals(serviceContext.getEtin().toString(), statusProperties.getEtin());
-        assertEquals(serviceContext.getTestCdType(), TestCdType.T);
-    }
+    // Removed: createServiceContextWrapper() no longer exists on AcknowledgementService (moved to
+    // MeFLoginClientService)
 
     private record ValidationMapCompleted(
             Map<String, List<List<String>>> validationErrorMap, Iterable<Completed> completeds) {}
