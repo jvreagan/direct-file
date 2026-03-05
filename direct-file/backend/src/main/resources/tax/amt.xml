@@ -1,0 +1,270 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/amt/amtIncome">
+      <Name>Alternative minimum taxable income</Name>
+      <Description>AMTI: taxable income plus AMT preference items (Form 6251, Line 7)</Description>
+      <Export mef="true" />
+      <TaxYear>2024</TaxYear>
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency module="taxCalculations" path="/taxableIncome" />
+            <Dependency module="taxCalculations" path="/standardOrItemizedDeductions" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/exemptionAmount">
+      <Name>AMT exemption amount</Name>
+      <Description>AMT exemption by filing status (Form 6251, Line 5)</Description>
+      <TaxYear>2024</TaxYear>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Any>
+                <Dependency module="filingStatus" path="/isFilingStatusMFJ" />
+                <Dependency module="filingStatus" path="/isFilingStatusQSS" />
+              </Any>
+            </When>
+            <Then>
+              <Dollar>133300</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <Dependency module="filingStatus" path="/isFilingStatusMFS" />
+            </When>
+            <Then>
+              <Dollar>66650</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>85700</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/phaseoutThreshold">
+      <Description>AMT exemption phaseout threshold</Description>
+      <TaxYear>2024</TaxYear>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Any>
+                <Dependency module="filingStatus" path="/isFilingStatusMFJ" />
+                <Dependency module="filingStatus" path="/isFilingStatusQSS" />
+              </Any>
+            </When>
+            <Then>
+              <Dollar>1218700</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <Dependency module="filingStatus" path="/isFilingStatusMFS" />
+            </When>
+            <Then>
+              <Dollar>609350</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>609350</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/exemptionPhaseout">
+      <Description>AMT exemption reduction (25% of AMTI over threshold)</Description>
+      <Derived>
+        <Round>
+          <GreaterOf>
+            <Multiply>
+              <Rational>25/100</Rational>
+              <GreaterOf>
+                <Subtract>
+                  <Minuend>
+                    <Dependency path="/amt/amtIncome" />
+                  </Minuend>
+                  <Subtrahends>
+                    <Dependency path="/amt/phaseoutThreshold" />
+                  </Subtrahends>
+                </Subtract>
+                <Dollar>0</Dollar>
+              </GreaterOf>
+            </Multiply>
+            <Dollar>0</Dollar>
+          </GreaterOf>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/netExemption">
+      <Description>Net AMT exemption after phaseout</Description>
+      <Derived>
+        <Round>
+          <GreaterOf>
+            <Subtract>
+              <Minuend>
+                <Dependency path="/amt/exemptionAmount" />
+              </Minuend>
+              <Subtrahends>
+                <Dependency path="/amt/exemptionPhaseout" />
+              </Subtrahends>
+            </Subtract>
+            <Dollar>0</Dollar>
+          </GreaterOf>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/amtBase">
+      <Description>AMT base (AMTI minus exemption)</Description>
+      <Derived>
+        <Round>
+          <GreaterOf>
+            <Subtract>
+              <Minuend>
+                <Dependency path="/amt/amtIncome" />
+              </Minuend>
+              <Subtrahends>
+                <Dependency path="/amt/netExemption" />
+              </Subtrahends>
+            </Subtract>
+            <Dollar>0</Dollar>
+          </GreaterOf>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/amtRateBreakpoint">
+      <Description>AMT 28% rate breakpoint</Description>
+      <TaxYear>2024</TaxYear>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Dependency module="filingStatus" path="/isFilingStatusMFS" />
+            </When>
+            <Then>
+              <Dollar>116300</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>232600</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/tentativeMinimumTax">
+      <Name>Tentative minimum tax</Name>
+      <Description>Tentative minimum tax (Form 6251, Line 9)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Switch>
+            <Case>
+              <When>
+                <LessThanOrEqual>
+                  <Left>
+                    <Dependency path="/amt/amtBase" />
+                  </Left>
+                  <Right>
+                    <Dependency path="/amt/amtRateBreakpoint" />
+                  </Right>
+                </LessThanOrEqual>
+              </When>
+              <Then>
+                <Multiply>
+                  <Rational>26/100</Rational>
+                  <Dependency path="/amt/amtBase" />
+                </Multiply>
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <True />
+              </When>
+              <Then>
+                <Add>
+                  <Multiply>
+                    <Rational>26/100</Rational>
+                    <Dependency path="/amt/amtRateBreakpoint" />
+                  </Multiply>
+                  <Multiply>
+                    <Rational>28/100</Rational>
+                    <Subtract>
+                      <Minuend>
+                        <Dependency path="/amt/amtBase" />
+                      </Minuend>
+                      <Subtrahends>
+                        <Dependency path="/amt/amtRateBreakpoint" />
+                      </Subtrahends>
+                    </Subtract>
+                  </Multiply>
+                </Add>
+              </Then>
+            </Case>
+          </Switch>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/amt/alternativeMinimumTax">
+      <Name>Alternative minimum tax</Name>
+      <Description>AMT owed: tentative minimum tax minus regular tax (Form 6251, Line 10)</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <GreaterOf>
+            <Subtract>
+              <Minuend>
+                <Dependency path="/amt/tentativeMinimumTax" />
+              </Minuend>
+              <Subtrahends>
+                <Dependency module="taxCalculations" path="/tentativeTaxFromTaxableIncome" />
+              </Subtrahends>
+            </Subtract>
+            <Dollar>0</Dollar>
+          </GreaterOf>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasAMT">
+      <Description>Whether the taxpayer owes AMT</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Dependency path="/amt/alternativeMinimumTax" />
+          </Left>
+          <Right>
+            <Dollar>0</Dollar>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

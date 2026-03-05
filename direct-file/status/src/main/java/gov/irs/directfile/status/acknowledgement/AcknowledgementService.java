@@ -61,6 +61,9 @@ public class AcknowledgementService {
     private ServiceContext serviceContext;
 
     private final StatusChangeMessageService statusChangeMessageService;
+    private final MeFAcksMTOMClientService getAcksClientService;
+    private final MeFLoginClientService loginClientService;
+    private final MeFLogoutClientService logoutClientService;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
 

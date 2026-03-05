@@ -1,0 +1,402 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/scheduleCs">
+      <Name>Schedule C businesses</Name>
+      <Description>Collection of Schedule C business activities</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/businessName">
+      <Name>Business name</Name>
+      <Description>Principal business or profession name (Schedule C, Line A)</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>75</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/businessCode">
+      <Name>Business activity code</Name>
+      <Description>Principal business code (Schedule C, Line B)</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="Match">
+          <String><![CDATA[\d{6}]]></String>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/ein">
+      <Name>Employer ID number</Name>
+      <Description>Employer ID number (Schedule C, Line D)</Description>
+      <Export mef="true" />
+      <Writable>
+        <EIN />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/accountingMethod">
+      <Name>Accounting method</Name>
+      <Description>Cash, accrual, or other (Schedule C, Line F)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Enum optionsPath="/scheduleCAccountingMethods" />
+      </Writable>
+    </Fact>
+
+    <!-- Income (Part I) -->
+    <Fact path="/scheduleCs/*/grossReceipts">
+      <Name>Gross receipts or sales</Name>
+      <Description>Gross receipts or sales (Schedule C, Line 1)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/returnsAndAllowances">
+      <Name>Returns and allowances</Name>
+      <Description>Returns and allowances (Schedule C, Line 2)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/costOfGoodsSold">
+      <Name>Cost of goods sold</Name>
+      <Description>Cost of goods sold (Schedule C, Line 4)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/grossIncome">
+      <Name>Gross income</Name>
+      <Description>Gross income (Schedule C, Line 5)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Subtract>
+            <Minuend>
+              <Subtract>
+                <Minuend>
+                  <Dependency path="../grossReceipts" />
+                </Minuend>
+                <Subtrahends>
+                  <Dependency path="../returnsAndAllowances" />
+                </Subtrahends>
+              </Subtract>
+            </Minuend>
+            <Subtrahends>
+              <Dependency path="../costOfGoodsSold" />
+            </Subtrahends>
+          </Subtract>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/otherIncome">
+      <Name>Other income</Name>
+      <Description>Other business income (Schedule C, Line 6)</Description>
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/grossIncomeWithOther">
+      <Description>Gross income plus other income (Schedule C, Line 7)</Description>
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="../grossIncome" />
+            <Dependency path="../otherIncome" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Expenses (Part II - simplified) -->
+    <Fact path="/scheduleCs/*/advertising">
+      <Name>Advertising</Name>
+      <Description>Advertising expenses (Schedule C, Line 8)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/carAndTruckExpenses">
+      <Name>Car and truck expenses</Name>
+      <Description>Car and truck expenses (Schedule C, Line 9)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/commissions">
+      <Name>Commissions and fees</Name>
+      <Description>Commissions and fees (Schedule C, Line 10)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/insurance">
+      <Name>Insurance</Name>
+      <Description>Insurance other than health (Schedule C, Line 15)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/interestMortgage">
+      <Name>Mortgage interest</Name>
+      <Description>Interest on business mortgage (Schedule C, Line 16a)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/interestOther">
+      <Name>Other interest</Name>
+      <Description>Other business interest (Schedule C, Line 16b)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/officeExpense">
+      <Name>Office expense</Name>
+      <Description>Office expense (Schedule C, Line 18)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/rent">
+      <Name>Rent or lease</Name>
+      <Description>Rent or lease of business property (Schedule C, Line 20b)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/supplies">
+      <Name>Supplies</Name>
+      <Description>Supplies (Schedule C, Line 22)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/utilities">
+      <Name>Utilities</Name>
+      <Description>Utilities (Schedule C, Line 25)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/otherExpenses">
+      <Name>Other expenses</Name>
+      <Description>Other business expenses (Schedule C, Line 27a)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/totalExpenses">
+      <Name>Total expenses</Name>
+      <Description>Total expenses before business use of home (Schedule C, Line 28)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="../advertising" />
+            <Dependency path="../carAndTruckExpenses" />
+            <Dependency path="../commissions" />
+            <Dependency path="../insurance" />
+            <Dependency path="../interestMortgage" />
+            <Dependency path="../interestOther" />
+            <Dependency path="../officeExpense" />
+            <Dependency path="../rent" />
+            <Dependency path="../supplies" />
+            <Dependency path="../utilities" />
+            <Dependency path="../otherExpenses" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/netProfit">
+      <Name>Net profit or loss</Name>
+      <Description>Net profit or loss (Schedule C, Line 31)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Subtract>
+            <Minuend>
+              <Dependency path="../grossIncomeWithOther" />
+            </Minuend>
+            <Subtrahends>
+              <Dependency path="../totalExpenses" />
+            </Subtrahends>
+          </Subtract>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleCs/*/isComplete">
+      <Description>Whether this Schedule C entry is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../businessName" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../grossReceipts" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalScheduleCNetProfit">
+      <Name>Total Schedule C net profit</Name>
+      <Description>Sum of net profit from all Schedule C businesses</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/scheduleCs/*/netProfit" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasScheduleC">
+      <Description>Whether the taxpayer has any Schedule C businesses</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/scheduleCs" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteScheduleCs">
+      <Description>Whether any Schedule C entry is incomplete</Description>
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/scheduleCs/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

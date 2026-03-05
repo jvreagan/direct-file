@@ -1,0 +1,118 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/scheduleSE/netEarningsFromSelfEmployment">
+      <Name>Net earnings from self-employment</Name>
+      <Description>Net SE earnings (Schedule SE, Line 3). 92.35% of Schedule C net profit.</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Multiply>
+            <Rational>9235/10000</Rational>
+            <Dependency module="scheduleC" path="/totalScheduleCNetProfit" />
+          </Multiply>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleSE/socialSecurityWageBase">
+      <Description>Social Security wage base for 2024</Description>
+      <TaxYear>2024</TaxYear>
+      <Derived>
+        <Dollar>168600</Dollar>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleSE/socialSecurityTaxRate">
+      <Description>Combined Social Security tax rate (employee + employer)</Description>
+      <Derived>
+        <Rational>124/1000</Rational>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleSE/medicareTaxRate">
+      <Description>Combined Medicare tax rate (employee + employer)</Description>
+      <Derived>
+        <Rational>29/1000</Rational>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleSE/selfEmploymentTax">
+      <Name>Self-employment tax</Name>
+      <Description>Total self-employment tax (Schedule SE, Line 12)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Switch>
+            <Case>
+              <When>
+                <LessThanOrEqual>
+                  <Left>
+                    <Dependency path="/scheduleSE/netEarningsFromSelfEmployment" />
+                  </Left>
+                  <Right>
+                    <Dollar>0</Dollar>
+                  </Right>
+                </LessThanOrEqual>
+              </When>
+              <Then>
+                <Dollar>0</Dollar>
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <True />
+              </When>
+              <Then>
+                <Add>
+                  <!-- Social Security portion (capped at wage base) -->
+                  <Multiply>
+                    <Rational>124/1000</Rational>
+                    <LesserOf>
+                      <Dependency path="/scheduleSE/netEarningsFromSelfEmployment" />
+                      <Dependency path="/scheduleSE/socialSecurityWageBase" />
+                    </LesserOf>
+                  </Multiply>
+                  <!-- Medicare portion (no cap) -->
+                  <Multiply>
+                    <Rational>29/1000</Rational>
+                    <Dependency path="/scheduleSE/netEarningsFromSelfEmployment" />
+                  </Multiply>
+                </Add>
+              </Then>
+            </Case>
+          </Switch>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleSE/deductibleSelfEmploymentTax">
+      <Name>Deductible self-employment tax</Name>
+      <Description>50% of SE tax, deductible on Schedule 1 (Line 15)</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <Multiply>
+            <Rational>50/100</Rational>
+            <Dependency path="/scheduleSE/selfEmploymentTax" />
+          </Multiply>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasSelfEmploymentIncome">
+      <Description>Whether the taxpayer has self-employment income requiring Schedule SE</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Dependency path="/scheduleSE/netEarningsFromSelfEmployment" />
+          </Left>
+          <Right>
+            <Dollar>400</Dollar>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

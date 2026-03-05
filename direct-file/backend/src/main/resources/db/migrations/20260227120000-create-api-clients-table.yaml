@@ -1,0 +1,75 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-api-clients-table
+      author: api-platform
+      comment: Create api_clients table for API key authentication
+      changes:
+        - createTable:
+            tableName: api_clients
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: api_clients_pkey
+              - column:
+                  name: api_key_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: client_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: client_secret_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+                    foreignKeyName: api_clients_user_id_fkey
+                    references: users(id)
+              - column:
+                  name: scopes
+                  type: VARCHAR(1024)
+                  constraints:
+                    nullable: false
+                  defaultValue: "read,write"
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+                  defaultValueBoolean: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            tableName: api_clients
+            columnNames: api_key_hash
+            constraintName: api_clients_api_key_hash_unique_idx
+        - addUniqueConstraint:
+            tableName: api_clients
+            columnNames: client_name
+            constraintName: api_clients_client_name_unique_idx
+        - createIndex:
+            tableName: api_clients
+            indexName: api_clients_user_id_idx
+            columns:
+              - column:
+                  name: user_id

@@ -1,0 +1,209 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/form1099Divs">
+      <Name>1099-DIV forms</Name>
+      <Description>Collection of Form 1099-DIV dividend income reports</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/payerName">
+      <Name>Payer name</Name>
+      <Description>Name of the payer (1099-DIV payer info)</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>75</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/payerTin">
+      <Name>Payer TIN</Name>
+      <Description>Payer's taxpayer identification number</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <EIN />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/ordinaryDividends">
+      <Name>Total ordinary dividends</Name>
+      <Description>Total ordinary dividends (1099-DIV, Box 1a)</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/qualifiedDividends">
+      <Name>Qualified dividends</Name>
+      <Description>Qualified dividends (1099-DIV, Box 1b)</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/totalCapitalGainDistributions">
+      <Name>Total capital gain distributions</Name>
+      <Description>Total capital gain distributions (1099-DIV, Box 2a)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/section199ADividends">
+      <Name>Section 199A dividends</Name>
+      <Description>Section 199A dividends (1099-DIV, Box 5)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/federalTaxWithheld">
+      <Name>Federal income tax withheld</Name>
+      <Description>Federal income tax withheld (1099-DIV, Box 4)</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/exemptInterestDividends">
+      <Name>Exempt-interest dividends</Name>
+      <Description>Exempt-interest dividends (1099-DIV, Box 12)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1099Divs/*/isComplete">
+      <Description>Whether this 1099-DIV is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../payerName" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../ordinaryDividends" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalOrdinaryDividends">
+      <Name>Total ordinary dividends</Name>
+      <Description>Sum of ordinary dividends from all 1099-DIVs</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1099Divs/*/ordinaryDividends" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalQualifiedDividends">
+      <Name>Total qualified dividends</Name>
+      <Description>Sum of qualified dividends from all 1099-DIVs</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1099Divs/*/qualifiedDividends" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalDividendWithholding">
+      <Name>Total dividend withholding</Name>
+      <Description>Sum of federal tax withheld from all 1099-DIVs</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1099Divs/*/federalTaxWithheld" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasForm1099Divs">
+      <Description>Whether the taxpayer has any 1099-DIV forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/form1099Divs" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteForm1099Divs">
+      <Description>Whether any 1099-DIV is incomplete</Description>
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/form1099Divs/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

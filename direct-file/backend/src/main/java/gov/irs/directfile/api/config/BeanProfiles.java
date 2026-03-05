@@ -7,4 +7,6 @@ public class BeanProfiles {
     public static final String ENABLE_REMOTE_CACHE = "enable-remote-cache";
     public static final String ALLOW_AUTHENTICATION_WITHOUT_PII = "allow-authentication-without-pii";
     public static final String FAKE_PII_SERVICE = "fake-pii-service";
+    public static final String AWS = "aws";
+    public static final String LOCAL = "local";
 }

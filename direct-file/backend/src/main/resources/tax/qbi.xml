@@ -1,0 +1,150 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/qbi/totalQualifiedBusinessIncome">
+      <Name>Total qualified business income</Name>
+      <Description>Total QBI from all qualified businesses</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency module="scheduleC" path="/totalScheduleCNetProfit" />
+            <Dependency module="scheduleK1s" path="/totalK1OrdinaryIncome" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/qbi/twentyPercentOfQbi">
+      <Description>20% of total QBI</Description>
+      <Derived>
+        <Round>
+          <Multiply>
+            <Rational>20/100</Rational>
+            <GreaterOf>
+              <Dependency path="/qbi/totalQualifiedBusinessIncome" />
+              <Dollar>0</Dollar>
+            </GreaterOf>
+          </Multiply>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/qbi/taxableIncomeBeforeQbi">
+      <Description>Taxable income before QBI deduction</Description>
+      <Derived>
+        <Dependency module="taxCalculations" path="/taxableIncome" />
+      </Derived>
+    </Fact>
+
+    <Fact path="/qbi/taxableIncomeLimitation">
+      <Description>20% of taxable income before QBI deduction (net of capital gains)</Description>
+      <Derived>
+        <Round>
+          <Multiply>
+            <Rational>20/100</Rational>
+            <GreaterOf>
+              <Dependency path="/qbi/taxableIncomeBeforeQbi" />
+              <Dollar>0</Dollar>
+            </GreaterOf>
+          </Multiply>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/qbi/incomeThreshold">
+      <Description>QBI deduction income threshold by filing status</Description>
+      <TaxYear>2024</TaxYear>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Any>
+                <Dependency module="filingStatus" path="/isFilingStatusMFJ" />
+                <Dependency module="filingStatus" path="/isFilingStatusQSS" />
+              </Any>
+            </When>
+            <Then>
+              <Dollar>383900</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>191950</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/qbi/isAboveThreshold">
+      <Description>Whether taxable income exceeds the QBI threshold</Description>
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Dependency path="/qbi/taxableIncomeBeforeQbi" />
+          </Left>
+          <Right>
+            <Dependency path="/qbi/incomeThreshold" />
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/qbi/qbiDeduction">
+      <Name>Qualified business income deduction</Name>
+      <Description>QBI deduction (Form 8995, Line 15): lesser of 20% QBI or 20% taxable income</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <Switch>
+            <Case>
+              <When>
+                <LessThanOrEqual>
+                  <Left>
+                    <Dependency path="/qbi/totalQualifiedBusinessIncome" />
+                  </Left>
+                  <Right>
+                    <Dollar>0</Dollar>
+                  </Right>
+                </LessThanOrEqual>
+              </When>
+              <Then>
+                <Dollar>0</Dollar>
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <True />
+              </When>
+              <Then>
+                <LesserOf>
+                  <Dependency path="/qbi/twentyPercentOfQbi" />
+                  <Dependency path="/qbi/taxableIncomeLimitation" />
+                </LesserOf>
+              </Then>
+            </Case>
+          </Switch>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasQbiDeduction">
+      <Description>Whether the taxpayer qualifies for a QBI deduction</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Dependency path="/qbi/qbiDeduction" />
+          </Left>
+          <Right>
+            <Dollar>0</Dollar>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

@@ -1,0 +1,259 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/scheduleK1s">
+      <Name>Schedule K-1 forms</Name>
+      <Description>Collection of Schedule K-1 pass-through income reports</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/entityName">
+      <Name>Entity name</Name>
+      <Description>Partnership or S Corporation name</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>75</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/entityEin">
+      <Name>Entity EIN</Name>
+      <Description>Entity's employer identification number</Description>
+      <Export mef="true" />
+      <Writable>
+        <EIN />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/entityType">
+      <Name>Entity type</Name>
+      <Description>Partnership (1065) or S Corporation (1120-S)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Enum optionsPath="/scheduleK1EntityTypes" />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/ordinaryBusinessIncome">
+      <Name>Ordinary business income</Name>
+      <Description>Ordinary business income/loss (K-1, Box 1)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/netRentalIncome">
+      <Name>Net rental real estate income</Name>
+      <Description>Net rental real estate income/loss (K-1, Box 2)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/interestIncome">
+      <Name>Interest income</Name>
+      <Description>Interest income (K-1, Box 5)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/ordinaryDividends">
+      <Name>Ordinary dividends</Name>
+      <Description>Ordinary dividends (K-1, Box 6a)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/qualifiedDividends">
+      <Name>Qualified dividends</Name>
+      <Description>Qualified dividends (K-1, Box 6b)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/netShortTermCapitalGain">
+      <Name>Net short-term capital gain</Name>
+      <Description>Net short-term capital gain/loss (K-1, Box 8)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/netLongTermCapitalGain">
+      <Name>Net long-term capital gain</Name>
+      <Description>Net long-term capital gain/loss (K-1, Box 9a)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/section179Deduction">
+      <Name>Section 179 deduction</Name>
+      <Description>Section 179 deduction (K-1, Box 12)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/selfEmploymentEarnings">
+      <Name>Self-employment earnings</Name>
+      <Description>Net earnings from self-employment (K-1, Box 14a)</Description>
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleK1s/*/isComplete">
+      <Description>Whether this K-1 is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../entityName" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../entityEin" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalK1OrdinaryIncome">
+      <Name>Total K-1 ordinary business income</Name>
+      <Description>Sum of ordinary business income from all K-1s</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/scheduleK1s/*/ordinaryBusinessIncome" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalK1RentalIncome">
+      <Name>Total K-1 rental income</Name>
+      <Description>Sum of net rental income from all K-1s</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/scheduleK1s/*/netRentalIncome" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalK1InterestIncome">
+      <Name>Total K-1 interest income</Name>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/scheduleK1s/*/interestIncome" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalK1Dividends">
+      <Name>Total K-1 dividends</Name>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/scheduleK1s/*/ordinaryDividends" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasScheduleK1s">
+      <Description>Whether the taxpayer has any K-1 forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/scheduleK1s" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteScheduleK1s">
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/scheduleK1s/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

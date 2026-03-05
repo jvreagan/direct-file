@@ -22,6 +22,10 @@
             <artifactId>data-models</artifactId>
         </dependency>
         <dependency>
+            <groupId>gov.irs.directfile</groupId>
+            <artifactId>mef-sdk-stubs</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>

@@ -1,0 +1,169 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <!-- Short-term (held 1 year or less) -->
+    <Fact path="/scheduleD/shortTermGainFrom8949">
+      <Name>Short-term gain from Form 8949</Name>
+      <Description>Short-term gain/loss from Form 8949 (Schedule D, Line 1a)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Dependency module="form8949" path="/totalShortTermGainLoss" />
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleD/otherShortTermGainLoss">
+      <Name>Other short-term gains or losses</Name>
+      <Description>Other short-term capital gains or losses (Schedule D, Line 5)</Description>
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleD/netShortTermGainLoss">
+      <Name>Net short-term capital gain or loss</Name>
+      <Description>Net short-term gain or loss (Schedule D, Line 7)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="/scheduleD/shortTermGainFrom8949" />
+            <Dependency path="/scheduleD/otherShortTermGainLoss" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Long-term (held more than 1 year) -->
+    <Fact path="/scheduleD/longTermGainFrom8949">
+      <Name>Long-term gain from Form 8949</Name>
+      <Description>Long-term gain/loss from Form 8949 (Schedule D, Line 8a)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Dependency module="form8949" path="/totalLongTermGainLoss" />
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleD/otherLongTermGainLoss">
+      <Name>Other long-term gains or losses</Name>
+      <Description>Other long-term capital gains or losses (Schedule D, Line 12)</Description>
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleD/netLongTermGainLoss">
+      <Name>Net long-term capital gain or loss</Name>
+      <Description>Net long-term gain or loss (Schedule D, Line 15)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="/scheduleD/longTermGainFrom8949" />
+            <Dependency path="/scheduleD/otherLongTermGainLoss" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Combined -->
+    <Fact path="/scheduleD/netGainLoss">
+      <Name>Net capital gain or loss</Name>
+      <Description>Combined net short-term and long-term (Schedule D, Line 16)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="/scheduleD/netShortTermGainLoss" />
+            <Dependency path="/scheduleD/netLongTermGainLoss" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleD/capitalLossLimit">
+      <Description>Maximum capital loss deduction ($3,000 or $1,500 MFS)</Description>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Dependency module="filingStatus" path="/isFilingStatusMFS" />
+            </When>
+            <Then>
+              <Dollar>1500</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>3000</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleD/allowableCapitalGainLossForIncome">
+      <Name>Capital gain or loss for income</Name>
+      <Description>Capital gain/loss to report on Form 1040 Line 7, limited by loss cap</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <Switch>
+            <Case>
+              <When>
+                <GreaterThanOrEqual>
+                  <Left>
+                    <Dependency path="/scheduleD/netGainLoss" />
+                  </Left>
+                  <Right>
+                    <Dollar>0</Dollar>
+                  </Right>
+                </GreaterThanOrEqual>
+              </When>
+              <Then>
+                <Dependency path="/scheduleD/netGainLoss" />
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <True />
+              </When>
+              <Then>
+                <GreaterOf>
+                  <Dependency path="/scheduleD/netGainLoss" />
+                  <Multiply>
+                    <Rational>-1/1</Rational>
+                    <Dependency path="/scheduleD/capitalLossLimit" />
+                  </Multiply>
+                </GreaterOf>
+              </Then>
+            </Case>
+          </Switch>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasCapitalGains">
+      <Description>Whether the taxpayer has capital gains/losses</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <NotEqual>
+          <Left>
+            <Dependency path="/scheduleD/netGainLoss" />
+          </Left>
+          <Right>
+            <Dollar>0</Dollar>
+          </Right>
+        </NotEqual>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

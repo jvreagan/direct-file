@@ -485,23 +485,25 @@
 
     <Fact path="/qualifiedDividends">
       <Name>Qualified Dividends</Name>
-      <Description>Qualified dividend income to report on line 3a of Form 1040.
-
-        OUT OF SCOPE</Description>
+      <Description>Qualified dividend income to report on line 3a of Form 1040.</Description>
+      <Export mef="true" />
 
       <Derived>
-        <Dollar>0</Dollar>
+        <Round>
+          <Dependency module="form1099Divs" path="/totalQualifiedDividends" />
+        </Round>
       </Derived>
     </Fact>
 
     <Fact path="/ordinaryDividends">
       <Name>Ordinary dividends</Name>
-      <Description>Ordinary dividend income to report on line 3b of Form 1040.
-        OUT OF SCOPE</Description>
-      <Export downstreamFacts="true" />
+      <Description>Ordinary dividend income to report on line 3b of Form 1040.</Description>
+      <Export downstreamFacts="true" mef="true" />
 
       <Derived>
-        <Dollar>0</Dollar>
+        <Round>
+          <Dependency module="form1099Divs" path="/totalOrdinaryDividends" />
+        </Round>
       </Derived>
     </Fact>
 
@@ -685,23 +687,26 @@
 
     <Fact path="/capitalGainsScheduleDNotRequired">
       <Name>Capital Gains Schedule D Not Required</Name>
-      <Description>1040 checkbox to be marked when *nonzero* gain/loss is exempt from Schedule D requirement. Capital
-        gain/loss is always zero for our TY2023 scope. So, per W&amp;I counsel we should never mark this in TY 2023.
-        (Instructions on Form 1040 are poor; see instruction booklet p. 31)
+      <Description>1040 checkbox to be marked when *nonzero* gain/loss is exempt from Schedule D requirement.
+        Only marked
+        false when Schedule D is required (i.e., when taxpayer has capital gains/losses).
       </Description>
+      <Export mef="true" />
       <Derived>
-        <False />
+        <Not>
+          <Dependency module="scheduleD" path="/hasCapitalGains" />
+        </Not>
       </Derived>
     </Fact>
 
     <Fact path="/capitalGainsOrLosses">
       <Name>Capital Gains or Losses</Name>
-      <Description>Total capital gains or losses for line 7 of the 1040
-
-        OUT OF SCOPE</Description>
-      <Export downstreamFacts="true" />
+      <Description>Total capital gains or losses for line 7 of the 1040, from Schedule D</Description>
+      <Export downstreamFacts="true" mef="true" />
       <Derived>
-        <Dollar>0</Dollar>
+        <Round>
+          <Dependency module="scheduleD" path="/scheduleD/allowableCapitalGainLossForIncome" />
+        </Round>
       </Derived>
     </Fact>
 
@@ -750,6 +755,10 @@
                 <Dependency path="/hasOtherIncome" />
                 <Dependency path="/hasAdjustmentsToIncome" />
                 <Dependency module="unemployment" path="/receivedUnemploymentCompensation" />
+                <Dependency module="scheduleC" path="/hasScheduleC" />
+                <Dependency module="scheduleE" path="/hasScheduleE" />
+                <Dependency module="form1099Necs" path="/hasForm1099Necs" />
+                <Dependency module="scheduleK1s" path="/hasScheduleK1s" />
               </Any>
             </When>
             <Then>
@@ -762,12 +771,21 @@
 
     <Fact path="/schedule1TotalOtherIncome">
       <Name>Total other income</Name>
-      <Description>Total other income reported on line 9 of the 1040 Schedule 1.</Description>
+      <Description>Total other income reported on line 9 of the 1040 Schedule 1.
+        Includes Schedule C business income
+        (line 3), Schedule E rental income (line 5),
+        1099-NEC nonemployee compensation, K-1 pass-through income, and
+        other income (line 8z).</Description>
       <Export mef="true" />
 
       <Derived>
         <Round>
           <Add>
+            <Dependency module="scheduleC" path="/totalScheduleCNetProfit" />
+            <Dependency module="scheduleE" path="/totalScheduleERentalIncome" />
+            <Dependency module="form1099Necs" path="/totalNonemployeeCompensation" />
+            <Dependency module="scheduleK1s" path="/totalK1OrdinaryIncome" />
+            <Dependency module="scheduleK1s" path="/totalK1RentalIncome" />
             <Dependency module="form1099Misc" path="/alaskaPfdIncome" />
           </Add>
         </Round>
@@ -822,6 +840,12 @@
           <Dependency module="cdcc" path="/hasReportedDependentCareBenefits" />
           <Dependency module="form1099Rs" path="/has1099R" />
           <Dependency module="socialSecurity" path="/hasSocialSecurityBenefits" />
+          <Dependency module="form1099Divs" path="/hasForm1099Divs" />
+          <Dependency module="form1099Bs" path="/hasForm1099Bs" />
+          <Dependency module="form1099Necs" path="/hasForm1099Necs" />
+          <Dependency module="scheduleC" path="/hasScheduleC" />
+          <Dependency module="scheduleE" path="/hasScheduleE" />
+          <Dependency module="scheduleK1s" path="/hasScheduleK1s" />
         </Any>
       </Derived>
     </Fact>

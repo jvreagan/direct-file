@@ -1,0 +1,347 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/scheduleEProperties">
+      <Name>Rental properties</Name>
+      <Description>Collection of rental real estate properties for Schedule E</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/propertyAddress">
+      <Name>Property address</Name>
+      <Description>Street address of the rental property (Schedule E, Line 1a)</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>100</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/propertyType">
+      <Name>Property type</Name>
+      <Description>Type of rental property (Schedule E, Line 1b)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Enum optionsPath="/scheduleEPropertyTypes" />
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/personalUseDays">
+      <Name>Personal use days</Name>
+      <Description>Days of personal use (Schedule E, Line 2)</Description>
+      <Writable>
+        <Int />
+        <Limit type="Min">
+          <Int>0</Int>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Int>0</Int>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/rentsReceived">
+      <Name>Rents received</Name>
+      <Description>Total rents received (Schedule E, Line 3)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/advertising">
+      <Name>Advertising</Name>
+      <Description>Advertising expenses (Schedule E, Line 5)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/autoAndTravel">
+      <Name>Auto and travel</Name>
+      <Description>Auto and travel expenses (Schedule E, Line 6)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/cleaning">
+      <Name>Cleaning and maintenance</Name>
+      <Description>Cleaning and maintenance (Schedule E, Line 7)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/insurance">
+      <Name>Insurance</Name>
+      <Description>Insurance (Schedule E, Line 9)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/legal">
+      <Name>Legal and professional fees</Name>
+      <Description>Legal and other professional fees (Schedule E, Line 10)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/management">
+      <Name>Management fees</Name>
+      <Description>Management fees (Schedule E, Line 11)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/mortgageInterest">
+      <Name>Mortgage interest paid</Name>
+      <Description>Mortgage interest paid (Schedule E, Line 12)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/repairs">
+      <Name>Repairs</Name>
+      <Description>Repairs (Schedule E, Line 14)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/supplies">
+      <Name>Supplies</Name>
+      <Description>Supplies (Schedule E, Line 15)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/taxes">
+      <Name>Taxes</Name>
+      <Description>Taxes (Schedule E, Line 16)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/utilities">
+      <Name>Utilities</Name>
+      <Description>Utilities (Schedule E, Line 17)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/depreciation">
+      <Name>Depreciation</Name>
+      <Description>Depreciation expense (Schedule E, Line 18)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/otherExpenses">
+      <Name>Other expenses</Name>
+      <Description>Other rental expenses (Schedule E, Line 19)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/totalExpenses">
+      <Name>Total expenses</Name>
+      <Description>Total rental expenses (Schedule E, Line 20)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="../advertising" />
+            <Dependency path="../autoAndTravel" />
+            <Dependency path="../cleaning" />
+            <Dependency path="../insurance" />
+            <Dependency path="../legal" />
+            <Dependency path="../management" />
+            <Dependency path="../mortgageInterest" />
+            <Dependency path="../repairs" />
+            <Dependency path="../supplies" />
+            <Dependency path="../taxes" />
+            <Dependency path="../utilities" />
+            <Dependency path="../depreciation" />
+            <Dependency path="../otherExpenses" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/netIncome">
+      <Name>Net rental income or loss</Name>
+      <Description>Net income or loss for this property (Schedule E, Line 21)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Subtract>
+            <Minuend>
+              <Dependency path="../rentsReceived" />
+            </Minuend>
+            <Subtrahends>
+              <Dependency path="../totalExpenses" />
+            </Subtrahends>
+          </Subtract>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleEProperties/*/isComplete">
+      <Description>Whether this rental property entry is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../propertyAddress" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../rentsReceived" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalScheduleERentalIncome">
+      <Name>Total Schedule E rental income</Name>
+      <Description>Sum of net rental income from all properties (Schedule E, Line 26)</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/scheduleEProperties/*/netIncome" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasScheduleE">
+      <Description>Whether the taxpayer has any Schedule E properties</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/scheduleEProperties" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteScheduleE">
+      <Description>Whether any Schedule E property is incomplete</Description>
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/scheduleEProperties/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

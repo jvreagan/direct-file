@@ -1,0 +1,143 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/form5498s">
+      <Name>5498 forms</Name>
+      <Description>Collection of Form 5498 IRA contribution information</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form5498s/*/trusteeName">
+      <Name>Trustee name</Name>
+      <Description>Name of the IRA trustee or issuer</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>75</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form5498s/*/trusteeTin">
+      <Name>Trustee TIN</Name>
+      <Description>Trustee's taxpayer identification number</Description>
+      <Export mef="true" />
+      <Writable>
+        <EIN />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form5498s/*/iraContributions">
+      <Name>IRA contributions</Name>
+      <Description>IRA contributions (5498, Box 1)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form5498s/*/rolloverContributions">
+      <Name>Rollover contributions</Name>
+      <Description>Rollover contributions (5498, Box 2)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form5498s/*/fairMarketValue">
+      <Name>Fair market value of account</Name>
+      <Description>Fair market value of account (5498, Box 5)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form5498s/*/rothIraContributions">
+      <Name>Roth IRA contributions</Name>
+      <Description>Roth IRA contributions (5498, Box 10)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form5498s/*/requiredMinimumDistribution">
+      <Name>Required minimum distribution</Name>
+      <Description>Required minimum distribution indicator (5498, Box 12a/12b)</Description>
+      <Writable>
+        <Boolean />
+      </Writable>
+      <Placeholder>
+        <False />
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form5498s/*/isComplete">
+      <Description>Whether this 5498 entry is complete</Description>
+      <Derived>
+        <IsComplete>
+          <Dependency path="../trusteeName" />
+        </IsComplete>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalIraContributions">
+      <Name>Total IRA contributions</Name>
+      <Description>Sum of IRA contributions from all 5498 forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form5498s/*/iraContributions" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasForm5498s">
+      <Description>Whether the taxpayer has any 5498 forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/form5498s" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

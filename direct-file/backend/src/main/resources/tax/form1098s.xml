@@ -1,0 +1,165 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/form1098s">
+      <Name>1098 forms</Name>
+      <Description>Collection of Form 1098 mortgage interest statements</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1098s/*/lenderName">
+      <Name>Lender name</Name>
+      <Description>Name of the lender/recipient</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>75</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1098s/*/lenderTin">
+      <Name>Lender TIN</Name>
+      <Description>Lender's taxpayer identification number</Description>
+      <Export mef="true" />
+      <Writable>
+        <EIN />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1098s/*/mortgageInterestReceived">
+      <Name>Mortgage interest received</Name>
+      <Description>Mortgage interest received from payer (1098, Box 1)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1098s/*/outstandingMortgagePrincipal">
+      <Name>Outstanding mortgage principal</Name>
+      <Description>Outstanding mortgage principal (1098, Box 2)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1098s/*/mortgageInsurancePremiums">
+      <Name>Mortgage insurance premiums</Name>
+      <Description>Mortgage insurance premiums (1098, Box 5)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1098s/*/pointsPaid">
+      <Name>Points paid on purchase</Name>
+      <Description>Points paid on purchase of principal residence (1098, Box 6)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1098s/*/isComplete">
+      <Description>Whether this 1098 is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../lenderName" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../mortgageInterestReceived" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalMortgageInterest">
+      <Name>Total mortgage interest</Name>
+      <Description>Sum of mortgage interest from all 1098 forms</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1098s/*/mortgageInterestReceived" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalPointsPaid">
+      <Name>Total points paid</Name>
+      <Description>Sum of points paid from all 1098 forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1098s/*/pointsPaid" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasForm1098s">
+      <Description>Whether the taxpayer has any 1098 forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/form1098s" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteForm1098s">
+      <Description>Whether any 1098 is incomplete</Description>
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/form1098s/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

@@ -10,6 +10,7 @@
 
     <modules>
         <module>../boms</module>
+        <module>mef-sdk-stubs</module>
         <module>data-models</module>
         <module>starters</module>
     </modules>

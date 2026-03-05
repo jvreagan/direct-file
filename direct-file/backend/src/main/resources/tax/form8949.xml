@@ -1,0 +1,252 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/form8949Transactions">
+      <Name>Capital asset transactions</Name>
+      <Description>Collection of capital asset sale/disposition transactions</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/description">
+      <Name>Description of property</Name>
+      <Description>Description of property sold (Form 8949, Column a)</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>100</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/dateAcquired">
+      <Name>Date acquired</Name>
+      <Description>Date property was acquired (Form 8949, Column b)</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="Match">
+          <String><![CDATA[\d{4}-\d{2}-\d{2}]]></String>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/dateSold">
+      <Name>Date sold</Name>
+      <Description>Date property was sold (Form 8949, Column c)</Description>
+      <Export mef="true" />
+      <Writable>
+        <String />
+        <Limit type="Match">
+          <String><![CDATA[\d{4}-\d{2}-\d{2}]]></String>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/proceeds">
+      <Name>Proceeds</Name>
+      <Description>Sales price / proceeds (Form 8949, Column d)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/costBasis">
+      <Name>Cost or other basis</Name>
+      <Description>Cost or other basis (Form 8949, Column e)</Description>
+      <Export mef="true" />
+      <Writable>
+        <Dollar />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/adjustmentCode">
+      <Name>Adjustment code</Name>
+      <Description>Code for adjustment, if any (Form 8949, Column f)</Description>
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>4</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/adjustmentAmount">
+      <Name>Adjustment amount</Name>
+      <Description>Adjustment to gain or loss (Form 8949, Column g)</Description>
+      <Writable>
+        <Dollar />
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/gainOrLoss">
+      <Name>Gain or loss</Name>
+      <Description>Gain or loss: proceeds minus cost plus adjustment (Form 8949, Column h)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Subtract>
+              <Minuend>
+                <Dependency path="../proceeds" />
+              </Minuend>
+              <Subtrahends>
+                <Dependency path="../costBasis" />
+              </Subtrahends>
+            </Subtract>
+            <Dependency path="../adjustmentAmount" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/isShortTerm">
+      <Name>Is short-term</Name>
+      <Description>Whether the holding period is 1 year or less</Description>
+      <Writable>
+        <Boolean />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/isComplete">
+      <Description>Whether this transaction entry is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../description" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../dateSold" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../proceeds" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../costBasis" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../isShortTerm" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/shortTermGainOrLoss">
+      <Description>Gain/loss counted only if this is a short-term transaction, otherwise $0</Description>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Dependency path="../isShortTerm" />
+            </When>
+            <Then>
+              <Dependency path="../gainOrLoss" />
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>0</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/form8949Transactions/*/longTermGainOrLoss">
+      <Description>Gain/loss counted only if this is a long-term transaction, otherwise $0</Description>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Not>
+                <Dependency path="../isShortTerm" />
+              </Not>
+            </When>
+            <Then>
+              <Dependency path="../gainOrLoss" />
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>0</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalShortTermGainLoss">
+      <Name>Total short-term gain/loss</Name>
+      <Description>Total gain or loss from short-term transactions</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form8949Transactions/*/shortTermGainOrLoss" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalLongTermGainLoss">
+      <Name>Total long-term gain/loss</Name>
+      <Description>Total gain or loss from long-term transactions</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form8949Transactions/*/longTermGainOrLoss" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasForm8949Transactions">
+      <Description>Whether taxpayer has any Form 8949 transactions</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/form8949Transactions" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteForm8949">
+      <Description>Whether any Form 8949 transaction is incomplete</Description>
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/form8949Transactions/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

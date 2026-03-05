@@ -1,0 +1,15 @@
+package gov.irs.directfile.api.forms.dto;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import jakarta.validation.constraints.*;
+
+public record Form1099GDto(
+        UUID id,
+        @NotBlank @Size(max = 75) String payerName,
+        @Pattern(regexp = "\\d{2}-\\d{7}") String payerTin,
+        @NotNull @DecimalMin("0") BigDecimal unemploymentCompensation,
+        @DecimalMin("0") BigDecimal federalTaxWithheld,
+        @DecimalMin("0") BigDecimal stateTaxWithheld,
+        @Pattern(regexp = "[A-Z]{2}") String payerState) {}

@@ -96,6 +96,26 @@
           <!-- Certain business expenses of reservists, performing artists, and fee-basis government officials. -->
           <!-- Moving expenses for members of the Armed Forces. Attach Form 3903  -->
           <!-- Deductible part of self-employment tax. Attach Schedule SE -->
+          <Switch>
+            <Case>
+              <When>
+                <IsComplete>
+                  <Dependency module="scheduleSE" path="/scheduleSE/deductibleSelfEmploymentTax" />
+                </IsComplete>
+              </When>
+              <Then>
+                <Dependency module="scheduleSE" path="/scheduleSE/deductibleSelfEmploymentTax" />
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <True />
+              </When>
+              <Then>
+                <Dollar>0</Dollar>
+              </Then>
+            </Case>
+          </Switch>
           <!-- Self-employed SEP, SIMPLE, and qualified plans -->
           <!-- Self-employed health insurance deduction -->
           <!-- Penalty on early withdrawal of savings -->
@@ -169,21 +189,27 @@
 
     <Fact path="/qualifiedBusinessIncomeDeduction">
       <Name>Qualified business income deduction</Name>
-      <Description>Qualified business income deductions for line 13 of Form 1040</Description>
+      <Description>Qualified business income deduction from Form 8995 for line 13 of Form 1040</Description>
+      <Export mef="true" />
       <Derived>
-        <Dollar>0</Dollar>
+        <Round>
+          <Dependency module="qbi" path="/qbi/qbiDeduction" />
+        </Round>
       </Derived>
     </Fact>
 
     <Fact path="/totalDeductions">
       <Name>Total deductions</Name>
-      <Description>Total deductions as reported on line 14 of Form 1040.</Description>
+      <Description>Total deductions as reported on line 14 of Form 1040.
+        Sum of standard/itemized deductions (line 12)
+        and QBI deduction (line 13).</Description>
       <Export mef="true" />
 
       <Derived>
         <Round>
           <Add>
             <Dependency path="/standardOrItemizedDeductions" />
+            <Dependency path="/qualifiedBusinessIncomeDeduction" />
           </Add>
         </Round>
       </Derived>
@@ -191,18 +217,24 @@
 
     <Fact path="/wantsStandardDeduction">
       <Name>Wants standard deduction</Name>
-      <Description>Will the taxpayer take the standard deduction?</Description>
+      <Description>Will the taxpayer take the standard deduction? Defaults to true unless
+        the taxpayer chooses to itemize
+        (Schedule A).</Description>
 
-      <Derived>
+      <Writable>
+        <Boolean />
+      </Writable>
+
+      <Placeholder>
         <True />
-      </Derived>
+      </Placeholder>
     </Fact>
 
     <Fact path="/standardOrItemizedDeductions">
       <Name>Standard or itemized deductions</Name>
       <Description>The taxpayer's choice of standard or itemized deductions as reported on line 12
-        of Form 1040.
-        Currently only the standard deduction is supported.</Description>
+        of Form 1040. Standard
+        deduction or Schedule A itemized deductions.</Description>
       <Export mef="true" />
 
       <Derived>
@@ -216,6 +248,16 @@
                 <Dependency module="standardDeduction" path="/standardDeduction" />
               </Then>
             </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Dependency path="/wantsStandardDeduction" />
+                </Not>
+              </When>
+              <Then>
+                <Dependency module="scheduleA" path="/scheduleA/totalItemizedDeductions" />
+              </Then>
+            </Case>
           </Switch>
         </Round>
       </Derived>
@@ -223,11 +265,31 @@
 
     <Fact path="/adjustmentsTotal">
       <Name>Other Deductions</Name>
-      <Description>Deductions such as educator expenses and student loan interest</Description>
+      <Description>Deductions such as educator expenses, student loan interest, and deductible SE tax</Description>
       <Derived>
         <Add>
           <Dependency module="educatorAdjustment" path="/educatorExpensesAdjustment" />
           <Dependency module="studentLoanAdjustment" path="/studentLoanInterestAdjustmentAmount" />
+          <Switch>
+            <Case>
+              <When>
+                <IsComplete>
+                  <Dependency module="scheduleSE" path="/scheduleSE/deductibleSelfEmploymentTax" />
+                </IsComplete>
+              </When>
+              <Then>
+                <Dependency module="scheduleSE" path="/scheduleSE/deductibleSelfEmploymentTax" />
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <True />
+              </When>
+              <Then>
+                <Dollar>0</Dollar>
+              </Then>
+            </Case>
+          </Switch>
         </Add>
       </Derived>
     </Fact>
@@ -1387,16 +1449,23 @@
 
     <Fact path="/line21OfSchedule2">
       <Name>Line 21 of Schedule 2</Name>
-      <Description>Other taxes, including self-employment Line 21 of schedule 2 for line 23 of form
-        1040</Description>
+      <Description>Other taxes, including self-employment tax. Line 21 of Schedule 2 for line 23 of Form
+        1040.</Description>
+      <Export mef="true" />
       <Derived>
-        <Dollar>0</Dollar>
+        <Round>
+          <Add>
+            <Dependency module="scheduleSE" path="/scheduleSE/selfEmploymentTax" />
+          </Add>
+        </Round>
       </Derived>
     </Fact>
 
     <Fact path="/totalTax">
       <Name>Total tax</Name>
-      <Description>Total tax as reported on line 24 of Form 1040.</Description>
+      <Description>Total tax as reported on line 24 of Form 1040.
+        Sum of tax less non-refundable credits (line 22) and
+        other taxes including SE tax (line 23).</Description>
       <Export downstreamFacts="true" mef="true" />
       <ExportZero />
 
@@ -1404,6 +1473,7 @@
         <Round>
           <Add>
             <Dependency path="/taxLessNonRefundableCredits" />
+            <Dependency path="/line21OfSchedule2" />
           </Add>
         </Round>
       </Derived>
@@ -1425,7 +1495,7 @@
 
     <Fact path="/form1099Withholding">
       <Name>Form 1099 withholding</Name>
-      <Description>Federal income tax withheld from wages, as reported on line 25b of Form 1040.</Description>
+      <Description>Federal income tax withheld from 1099 forms, as reported on line 25b of Form 1040.</Description>
       <Export mef="true" />
 
       <Derived>
@@ -1441,6 +1511,9 @@
           </CollectionSum>
           <Dependency module="form1099Misc" path="/form1099MiscFederalIncomeTaxWithheld" />
           <Dependency module="form1099Rs" path="/form1099RsFederalIncomeTaxWithheld" />
+          <Dependency module="form1099Divs" path="/totalDividendWithholding" />
+          <Dependency module="form1099Bs" path="/total1099BWithholding" />
+          <Dependency module="form1099Necs" path="/total1099NecWithholding" />
         </Add>
       </Derived>
     </Fact>

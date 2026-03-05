@@ -48,6 +48,7 @@ public class AcknowledgementController {
     public ResponseEntity<AcknowledgementStatus> get(
             @RequestParam(name = "id") UUID taxReturnId, HttpServletRequest request) {
         AuditEventData eventData = new AuditEventData();
+        String remoteAddress = getClientIpAddress(request);
         String submissionId = null;
         try {
             MDC.put(AuditLogElement.taxReturnId.toString(), taxReturnId.toString());
@@ -70,6 +71,7 @@ public class AcknowledgementController {
                 addValuesToEventData(eventData, AuditLogElement.taxReturnId, taxReturnId.toString());
                 addValuesToEventData(
                         eventData, AuditLogElement.responseStatusCode, String.valueOf(HttpStatus.NOT_FOUND.value()));
+                addValuesToEventData(eventData, AuditLogElement.remoteAddress, remoteAddress);
 
                 auditService.performLogFromEvent(
                         Event.builder()
@@ -84,6 +86,7 @@ public class AcknowledgementController {
             addValuesToEventData(eventData, AuditLogElement.mefSubmissionId, submissionId);
             addValuesToEventData(eventData, AuditLogElement.taxReturnId, taxReturnId.toString());
             addValuesToEventData(eventData, AuditLogElement.responseStatusCode, String.valueOf(HttpStatus.OK.value()));
+            addValuesToEventData(eventData, AuditLogElement.remoteAddress, remoteAddress);
 
             auditService.performLogFromEvent(
                     Event.builder()
@@ -101,6 +104,7 @@ public class AcknowledgementController {
             addValuesToEventData(eventData, AuditLogElement.taxReturnId, taxReturnId.toString());
             addValuesToEventData(
                     eventData, AuditLogElement.responseStatusCode, String.valueOf(HttpStatus.BAD_REQUEST.value()));
+            addValuesToEventData(eventData, AuditLogElement.remoteAddress, remoteAddress);
 
             auditService.performLogFromEvent(
                     Event.builder()
@@ -123,6 +127,7 @@ public class AcknowledgementController {
     public ResponseEntity<List<RejectedStatus>> getRejectionCodes(
             @RequestParam(name = "submissionId") String submissionId, HttpServletRequest request) {
         AuditEventData eventData = new AuditEventData();
+        String remoteAddress = getClientIpAddress(request);
         try {
             MDC.put(AuditLogElement.mefSubmissionId.toString(), submissionId);
             MDC.clear();
@@ -135,6 +140,7 @@ public class AcknowledgementController {
                 addValuesToEventData(eventData, AuditLogElement.mefSubmissionId, submissionId);
                 addValuesToEventData(
                         eventData, AuditLogElement.responseStatusCode, String.valueOf(HttpStatus.NOT_FOUND.value()));
+                addValuesToEventData(eventData, AuditLogElement.remoteAddress, remoteAddress);
 
                 auditService.performLogFromEvent(
                         Event.builder()
@@ -152,6 +158,7 @@ public class AcknowledgementController {
             // this will get logged everytime /status is hit, regardless of whether submissionId is found
             addValuesToEventData(eventData, AuditLogElement.mefSubmissionId, submissionId);
             addValuesToEventData(eventData, AuditLogElement.responseStatusCode, String.valueOf(HttpStatus.OK.value()));
+            addValuesToEventData(eventData, AuditLogElement.remoteAddress, remoteAddress);
 
             auditService.performLogFromEvent(
                     Event.builder()
@@ -168,6 +175,7 @@ public class AcknowledgementController {
             addValuesToEventData(eventData, AuditLogElement.mefSubmissionId, submissionId);
             addValuesToEventData(
                     eventData, AuditLogElement.responseStatusCode, String.valueOf(HttpStatus.BAD_REQUEST.value()));
+            addValuesToEventData(eventData, AuditLogElement.remoteAddress, remoteAddress);
 
             auditService.performLogFromEvent(
                     Event.builder()
@@ -189,6 +197,14 @@ public class AcknowledgementController {
         if (value != null) {
             auditEventData.put(key, value);
         }
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xff = request.getHeader(X_FORWARDED_FOR);
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].strip();
+        }
+        return request.getRemoteAddr();
     }
 
     // This is a bit of workaround to make our log messages more clear.

@@ -1,0 +1,136 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <Fact path="/form1099Necs">
+      <Name>1099-NEC forms</Name>
+      <Description>Collection of Form 1099-NEC nonemployee compensation reports</Description>
+      <Writable>
+        <Collection />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Necs/*/payerName">
+      <Name>Payer name</Name>
+      <Description>Name of the payer</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <String />
+        <Limit type="MaxLength">
+          <Int>75</Int>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Necs/*/payerTin">
+      <Name>Payer TIN</Name>
+      <Description>Payer's taxpayer identification number</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <EIN />
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Necs/*/nonemployeeCompensation">
+      <Name>Nonemployee compensation</Name>
+      <Description>Nonemployee compensation (1099-NEC, Box 1)</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+    </Fact>
+
+    <Fact path="/form1099Necs/*/federalTaxWithheld">
+      <Name>Federal income tax withheld</Name>
+      <Description>Federal income tax withheld (1099-NEC, Box 4)</Description>
+      <Export mef="true" stateSystems="true" />
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/form1099Necs/*/isComplete">
+      <Description>Whether this 1099-NEC is complete</Description>
+      <Derived>
+        <All>
+          <IsComplete>
+            <Dependency path="../payerName" />
+          </IsComplete>
+          <IsComplete>
+            <Dependency path="../nonemployeeCompensation" />
+          </IsComplete>
+        </All>
+      </Derived>
+    </Fact>
+
+    <Fact path="/totalNonemployeeCompensation">
+      <Name>Total nonemployee compensation</Name>
+      <Description>Sum of nonemployee compensation from all 1099-NECs</Description>
+      <Export downstreamFacts="true" mef="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1099Necs/*/nonemployeeCompensation" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/total1099NecWithholding">
+      <Name>Total 1099-NEC withholding</Name>
+      <Description>Sum of federal tax withheld from all 1099-NECs</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <Round>
+          <CollectionSum>
+            <Dependency path="/form1099Necs/*/federalTaxWithheld" />
+          </CollectionSum>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasForm1099Necs">
+      <Description>Whether the taxpayer has any 1099-NEC forms</Description>
+      <Export downstreamFacts="true" />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <CollectionSize>
+              <Dependency path="/form1099Necs" />
+            </CollectionSize>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+
+    <Fact path="/hasIncompleteForm1099Necs">
+      <Description>Whether any 1099-NEC is incomplete</Description>
+      <BlockSubmissionOnTrue />
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Count>
+              <Not>
+                <Dependency path="/form1099Necs/*/isComplete" />
+              </Not>
+            </Count>
+          </Left>
+          <Right>
+            <Int>0</Int>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>

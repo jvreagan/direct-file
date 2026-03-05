@@ -1,0 +1,275 @@
+<?xml-model href="./FactDictionaryModule.rng"?>
+<FactDictionaryModule>
+  <Facts>
+    <!-- Medical and Dental Expenses (Lines 1-4) -->
+    <Fact path="/scheduleA/medicalAndDentalExpenses">
+      <Name>Medical and dental expenses</Name>
+      <Description>Total medical and dental expenses (Schedule A, Line 1)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/agiPercentForMedical">
+      <Description>7.5% of AGI threshold for medical deduction</Description>
+      <Derived>
+        <Multiply>
+          <Rational>75/1000</Rational>
+          <Dependency module="taxCalculations" path="/agi" />
+        </Multiply>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleA/medicalDeduction">
+      <Name>Deductible medical expenses</Name>
+      <Description>Medical expenses exceeding 7.5% of AGI (Schedule A, Line 4)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <GreaterOf>
+            <Subtract>
+              <Minuend>
+                <Dependency path="/scheduleA/medicalAndDentalExpenses" />
+              </Minuend>
+              <Subtrahends>
+                <Dependency path="/scheduleA/agiPercentForMedical" />
+              </Subtrahends>
+            </Subtract>
+            <Dollar>0</Dollar>
+          </GreaterOf>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Taxes You Paid (Lines 5-7) -->
+    <Fact path="/scheduleA/stateAndLocalTaxes">
+      <Name>State and local income taxes or sales taxes</Name>
+      <Description>State and local taxes paid (Schedule A, Line 5a)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/realEstateTaxes">
+      <Name>Real estate taxes</Name>
+      <Description>Real estate taxes paid (Schedule A, Line 5b)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/personalPropertyTaxes">
+      <Name>Personal property taxes</Name>
+      <Description>Personal property taxes paid (Schedule A, Line 5c)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/saltDeductionLimit">
+      <Description>SALT deduction cap ($10,000 or $5,000 MFS)</Description>
+      <Derived>
+        <Switch>
+          <Case>
+            <When>
+              <Dependency module="filingStatus" path="/isFilingStatusMFS" />
+            </When>
+            <Then>
+              <Dollar>5000</Dollar>
+            </Then>
+          </Case>
+          <Case>
+            <When>
+              <True />
+            </When>
+            <Then>
+              <Dollar>10000</Dollar>
+            </Then>
+          </Case>
+        </Switch>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleA/totalStateAndLocalTaxes">
+      <Description>Total state/local taxes before cap (Line 5d)</Description>
+      <Derived>
+        <Add>
+          <Dependency path="/scheduleA/stateAndLocalTaxes" />
+          <Dependency path="/scheduleA/realEstateTaxes" />
+          <Dependency path="/scheduleA/personalPropertyTaxes" />
+        </Add>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleA/taxesYouPaid">
+      <Name>Taxes you paid</Name>
+      <Description>Total deductible taxes paid, capped at SALT limit (Schedule A, Line 7)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <LesserOf>
+            <Dependency path="/scheduleA/totalStateAndLocalTaxes" />
+            <Dependency path="/scheduleA/saltDeductionLimit" />
+          </LesserOf>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Interest You Paid (Lines 8-10) -->
+    <Fact path="/scheduleA/homeMortgageInterest">
+      <Name>Home mortgage interest</Name>
+      <Description>Home mortgage interest from Form 1098 (Schedule A, Line 8a)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/investmentInterest">
+      <Name>Investment interest</Name>
+      <Description>Investment interest (Schedule A, Line 9)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/interestYouPaid">
+      <Name>Interest you paid</Name>
+      <Description>Total deductible interest (Schedule A, Line 10)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="/scheduleA/homeMortgageInterest" />
+            <Dependency path="/scheduleA/investmentInterest" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Gifts to Charity (Lines 11-14) -->
+    <Fact path="/scheduleA/charityCash">
+      <Name>Gifts by cash or check</Name>
+      <Description>Charitable contributions by cash or check (Schedule A, Line 12)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/charityNonCash">
+      <Name>Gifts other than cash or check</Name>
+      <Description>Non-cash charitable contributions (Schedule A, Line 13)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <Fact path="/scheduleA/giftsToCharity">
+      <Name>Gifts to charity</Name>
+      <Description>Total charitable contributions (Schedule A, Line 14)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="/scheduleA/charityCash" />
+            <Dependency path="/scheduleA/charityNonCash" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <!-- Other Itemized Deductions (Line 16) -->
+    <Fact path="/scheduleA/otherItemizedDeductions">
+      <Name>Other itemized deductions</Name>
+      <Description>Other itemized deductions (Schedule A, Line 16)</Description>
+      <Writable>
+        <Dollar />
+        <Limit type="Min">
+          <Dollar>0</Dollar>
+        </Limit>
+      </Writable>
+      <Placeholder>
+        <Dollar>0</Dollar>
+      </Placeholder>
+    </Fact>
+
+    <!-- Total Itemized Deductions (Line 17) -->
+    <Fact path="/scheduleA/totalItemizedDeductions">
+      <Name>Total itemized deductions</Name>
+      <Description>Total itemized deductions (Schedule A, Line 17)</Description>
+      <Export mef="true" />
+      <Derived>
+        <Round>
+          <Add>
+            <Dependency path="/scheduleA/medicalDeduction" />
+            <Dependency path="/scheduleA/taxesYouPaid" />
+            <Dependency path="/scheduleA/interestYouPaid" />
+            <Dependency path="/scheduleA/giftsToCharity" />
+            <Dependency path="/scheduleA/otherItemizedDeductions" />
+          </Add>
+        </Round>
+      </Derived>
+    </Fact>
+
+    <Fact path="/scheduleA/isComplete">
+      <Description>Whether Schedule A has been filled out</Description>
+      <Derived>
+        <GreaterThan>
+          <Left>
+            <Dependency path="/scheduleA/totalItemizedDeductions" />
+          </Left>
+          <Right>
+            <Dollar>0</Dollar>
+          </Right>
+        </GreaterThan>
+      </Derived>
+    </Fact>
+  </Facts>
+</FactDictionaryModule>
