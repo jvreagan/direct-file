@@ -16,4 +16,8 @@ public class SubmissionXML {
     public File getSubmissionFile() {
         return submissionFile;
     }
+
+    public String getXmlData() {
+        return null;
+    }
 }

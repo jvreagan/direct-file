@@ -6,6 +6,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import gov.irs.directfile.submit.actions.ActionContext;
@@ -18,6 +19,7 @@ import gov.irs.directfile.submit.exception.LogoutFailureException;
 import gov.irs.directfile.submit.service.interfaces.IBundleSubmissionActionHandler;
 
 @Service
+@ConditionalOnProperty(value = "submit.performance-testing-mode-enabled", havingValue = "true")
 /**
  * A Bundle Submission Service used for perf testing.
  *

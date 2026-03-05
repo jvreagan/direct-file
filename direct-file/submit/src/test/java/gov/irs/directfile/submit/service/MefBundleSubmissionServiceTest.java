@@ -94,8 +94,6 @@ public class MefBundleSubmissionServiceTest {
             loggerExtension.verifyLogEvent(
                     expectedEvent,
                     Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
                             AuditLogElement.responseStatusCode,
                             "200",
                             AuditLogElement.remoteAddress,
@@ -134,7 +132,7 @@ public class MefBundleSubmissionServiceTest {
                     .eventId(EventId.SUBMIT_BATCH)
                     .eventStatus(EventStatus.FAILURE)
                     .eventPrincipal(new SystemEventPrincipal())
-                    .eventErrorMessage("java.lang.RuntimeException")
+                    .eventErrorMessage(exception.getCause().getClass().getName())
                     .detail(
                             "{mefSubmissionIds=00000, errorMessage=gov.irs.mef.exception.ServiceException: test service exception}")
                     .build();
@@ -142,12 +140,8 @@ public class MefBundleSubmissionServiceTest {
                     expectedEvent,
                     0,
                     Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
                             AuditLogElement.responseStatusCode,
                             "400",
-                            AuditLogElement.eventErrorMessage,
-                            exception.getCause().getClass().getName(),
                             AuditLogElement.remoteAddress,
                             userContextData.getRemoteAddress()));
         }
@@ -167,7 +161,7 @@ public class MefBundleSubmissionServiceTest {
                     .eventId(EventId.SUBMIT_BATCH)
                     .eventStatus(EventStatus.FAILURE)
                     .eventPrincipal(new SystemEventPrincipal())
-                    .eventErrorMessage("java.lang.RuntimeException")
+                    .eventErrorMessage(exception.getCause().getClass().getName())
                     .detail(
                             "{mefSubmissionIds=00000, errorMessage=gov.irs.mef.exception.ToolkitException: test toolkit exception}")
                     .build();
@@ -175,12 +169,8 @@ public class MefBundleSubmissionServiceTest {
                     expectedEvent,
                     1,
                     Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
                             AuditLogElement.responseStatusCode,
                             "400",
-                            AuditLogElement.eventErrorMessage,
-                            exception.getCause().getClass().getName(),
                             AuditLogElement.remoteAddress,
                             userContextData.getRemoteAddress()));
         }

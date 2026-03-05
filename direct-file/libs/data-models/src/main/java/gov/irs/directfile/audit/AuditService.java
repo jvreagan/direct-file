@@ -56,6 +56,10 @@ public class AuditService {
     private void log(Event event, AuditEventData eventData) {
         addAuditPropertiesToMDC(event);
 
+        if (event.getDetail() != null) {
+            eventData.put(AuditLogElement.detail, event.getDetail());
+        }
+
         LoggingEventBuilder builder =
                 EventStatus.SUCCESS.toString().equals(MDC.get(AuditLogElement.eventStatus.toString()))
                         ? log.atInfo()

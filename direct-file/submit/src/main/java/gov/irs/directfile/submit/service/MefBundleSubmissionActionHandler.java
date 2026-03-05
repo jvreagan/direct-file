@@ -95,7 +95,6 @@ public class MefBundleSubmissionActionHandler implements IBundleSubmissionAction
                     .detail(Map.of("mefSubmissionIds", submissionIds).toString())
                     .build();
             AuditEventData successEventData = new AuditEventData();
-            successEventData.put(AuditLogElement.cyberOnly, true);
             successEventData.put(AuditLogElement.responseStatusCode, "200");
             successEventData.put(
                     AuditLogElement.remoteAddress, userContexts.get(0).getRemoteAddress());
@@ -112,9 +111,7 @@ public class MefBundleSubmissionActionHandler implements IBundleSubmissionAction
                             .toString())
                     .build();
             AuditEventData failureEventData = new AuditEventData();
-            failureEventData.put(AuditLogElement.cyberOnly, true);
             failureEventData.put(AuditLogElement.responseStatusCode, "400");
-            failureEventData.put(AuditLogElement.eventErrorMessage, e.getClass().getName());
             failureEventData.put(
                     AuditLogElement.remoteAddress, userContexts.get(0).getRemoteAddress());
             auditService.performLogFromEvent(failureEvent, failureEventData);

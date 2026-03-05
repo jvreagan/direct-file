@@ -1,13 +1,10 @@
 package gov.irs.directfile.submit.actions;
 
 import java.util.List;
-import java.util.Map;
 
-import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +14,11 @@ import org.springframework.context.annotation.Import;
 import gov.irs.mef.exception.ToolkitException;
 import gov.irs.mef.inputcomposition.PostmarkedSubmissionArchive;
 import gov.irs.mef.inputcomposition.SubmissionBuilder;
+import gov.irs.mef.inputcomposition.SubmissionContainer;
 
-import gov.irs.directfile.audit.AuditLogElement;
-import gov.irs.directfile.audit.AuditService;
-import gov.irs.directfile.audit.events.Event;
-import gov.irs.directfile.audit.events.EventId;
-import gov.irs.directfile.audit.events.EventStatus;
-import gov.irs.directfile.audit.events.SystemEventPrincipal;
-import gov.irs.directfile.audit.events.TaxPeriod;
 import gov.irs.directfile.audit.events.TinType;
-import gov.irs.directfile.audit.events.XXXCode;
+import gov.irs.directfile.submit.actions.exception.BundleArchiveActionException;
+import gov.irs.directfile.submit.actions.results.BundleArchivesActionResult;
 import gov.irs.directfile.submit.actions.results.CreateArchiveActionResult;
 import gov.irs.directfile.submit.command.BundleArchiveAction;
 import gov.irs.directfile.submit.config.Config;
@@ -35,9 +27,8 @@ import gov.irs.directfile.submit.config.SynchronousS3TestConfiguration;
 import gov.irs.directfile.submit.domain.SubmissionArchiveContainer;
 import gov.irs.directfile.submit.domain.SubmissionBatch;
 import gov.irs.directfile.submit.domain.UserContextData;
-import gov.irs.directfile.submit.extension.LoggerExtension;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -60,9 +51,6 @@ public class BundleArchivesActionHandlerTest {
 
     @Autowired
     Config config;
-
-    @RegisterExtension
-    public static LoggerExtension logVerifier = new LoggerExtension(Level.INFO, AuditService.class.getName());
 
     // default test data
     final UserContextData userContextData1 = new UserContextData(
@@ -89,7 +77,7 @@ public class BundleArchivesActionHandlerTest {
             new SubmissionArchiveContainer(userContextData2, mockSubmissionArchive2));
 
     @Test
-    void bundleArchivesActionLogsCreateBundleSuccessAuditEvent() throws ActionException {
+    void bundleArchivesActionReturnsResultOnSuccess() throws ActionException {
         // given
         ActionContext actionContext = new ActionContext(config);
         SubmissionBatch submissionBatch = new SubmissionBatch(0L, "");
@@ -97,66 +85,28 @@ public class BundleArchivesActionHandlerTest {
                 new CreateArchiveActionResult(submissionBatch, submissionArchiveContainers);
         BundleArchivesActionHandler bundleArchivesActionHandler = new BundleArchivesActionHandler(actionContext);
 
+        SubmissionContainer mockContainer = mock(SubmissionContainer.class);
+
         try (MockedStatic<SubmissionBuilder> mockSubmissionBuilder = Mockito.mockStatic(SubmissionBuilder.class)) {
             mockSubmissionBuilder
-                    .when(() -> SubmissionBuilder.createPostmarkedSubmissionArchive(any(), any()))
-                    .thenReturn(mockSubmissionArchive1)
-                    .thenReturn(mockSubmissionArchive2);
+                    .when(() -> SubmissionBuilder.createSubmissionContainer(
+                            any(PostmarkedSubmissionArchive[].class), anyString()))
+                    .thenReturn(mockContainer);
 
             // when
-            bundleArchivesActionHandler.handleBundleCommand(new BundleArchiveAction(createArchiveActionResult));
+            BundleArchivesActionResult result =
+                    bundleArchivesActionHandler.handleBundleCommand(new BundleArchiveAction(createArchiveActionResult));
 
-            // then verify 2 events were logged with expected values
-            logVerifier.verifyLogEvent(
-                    generateCreateBundleSuccessAuditEvent("{directFileUserId=00000000-0000-0000-0000-000000000000}"),
-                    0,
-                    Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
-                            AuditLogElement.responseStatusCode,
-                            "200",
-                            AuditLogElement.mefSubmissionId,
-                            userContextData1.getSubmissionId(),
-                            AuditLogElement.taxPeriod,
-                            TaxPeriod.TY2024,
-                            AuditLogElement.taxReturnId,
-                            userContextData1.getTaxReturnId(),
-                            AuditLogElement.userTin,
-                            userContextData1.getUserTin(),
-                            AuditLogElement.userTinType,
-                            userContextData1.getUserTinType(),
-                            AuditLogElement.mftCode,
-                            XXXCode.XXX_CODE,
-                            AuditLogElement.remoteAddress,
-                            userContextData1.getRemoteAddress()));
-
-            logVerifier.verifyLogEvent(
-                    generateCreateBundleSuccessAuditEvent("{directFileUserId=88888888-8888-8888-8888-888888888888}"),
-                    1,
-                    Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
-                            AuditLogElement.responseStatusCode,
-                            "200",
-                            AuditLogElement.mefSubmissionId,
-                            userContextData2.getSubmissionId(),
-                            AuditLogElement.taxPeriod,
-                            TaxPeriod.TY2024,
-                            AuditLogElement.taxReturnId,
-                            userContextData2.getTaxReturnId(),
-                            AuditLogElement.userTin,
-                            userContextData2.getUserTin(),
-                            AuditLogElement.userTinType,
-                            userContextData2.getUserTinType(),
-                            AuditLogElement.mftCode,
-                            XXXCode.XXX_CODE,
-                            AuditLogElement.remoteAddress,
-                            userContextData2.getRemoteAddress()));
+            // then
+            assertNotNull(result);
+            assertEquals(submissionBatch, result.getBatch());
+            assertNotNull(result.getBundledArchives());
+            assertEquals(2, result.getBundledArchives().UserContexts.size());
         }
     }
 
     @Test
-    void bundleArchivesActionLogsCreateBundleFailureAuditEvent() {
+    void bundleArchivesActionThrowsBundleArchiveActionExceptionOnFailure() {
         // given
         ActionContext actionContext = new ActionContext(config);
         SubmissionBatch submissionBatch = new SubmissionBatch(0L, "");
@@ -170,71 +120,15 @@ public class BundleArchivesActionHandlerTest {
                             any(PostmarkedSubmissionArchive[].class), anyString()))
                     .thenThrow(new ToolkitException("test toolkit exception"));
 
-            // when
-            bundleArchivesActionHandler.handleBundleCommand(new BundleArchiveAction(createArchiveActionResult));
-            fail("expected it to throw an exception");
-        } catch (ActionException actionException) {
-            // then verify 2 events were logged with expected values
-            logVerifier.verifyLogEvent(
-                    generateCreateBundleFailureAuditEvent(
-                            "gov.irs.mef.exception.ToolkitException",
-                            "{directFileUserId=00000000-0000-0000-0000-000000000000, errorMessage=test toolkit exception}"),
-                    0,
-                    Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
-                            AuditLogElement.responseStatusCode,
-                            "400",
-                            AuditLogElement.mefSubmissionId,
-                            userContextData1.getSubmissionId(),
-                            AuditLogElement.taxPeriod,
-                            TaxPeriod.TY2024,
-                            AuditLogElement.taxReturnId,
-                            userContextData1.getTaxReturnId(),
-                            AuditLogElement.mftCode,
-                            XXXCode.XXX_CODE,
-                            AuditLogElement.remoteAddress,
-                            userContextData1.getRemoteAddress()));
+            // when / then
+            BundleArchiveActionException thrown = assertThrows(
+                    BundleArchiveActionException.class,
+                    () -> bundleArchivesActionHandler.handleBundleCommand(
+                            new BundleArchiveAction(createArchiveActionResult)));
 
-            logVerifier.verifyLogEvent(
-                    generateCreateBundleFailureAuditEvent(
-                            "gov.irs.mef.exception.ToolkitException",
-                            "{directFileUserId=88888888-8888-8888-8888-888888888888, errorMessage=test toolkit exception}"),
-                    1,
-                    Map.of(
-                            AuditLogElement.cyberOnly,
-                            true,
-                            AuditLogElement.responseStatusCode,
-                            "400",
-                            AuditLogElement.mefSubmissionId,
-                            userContextData2.getSubmissionId(),
-                            AuditLogElement.taxPeriod,
-                            TaxPeriod.TY2024,
-                            AuditLogElement.taxReturnId,
-                            userContextData2.getTaxReturnId(),
-                            AuditLogElement.mftCode,
-                            XXXCode.XXX_CODE,
-                            AuditLogElement.remoteAddress,
-                            userContextData2.getRemoteAddress()));
+            assertEquals(2, thrown.getUserContextDataList().size());
+            assertEquals(submissionBatch, thrown.getBatch());
+            assertInstanceOf(ToolkitException.class, thrown.getCause());
         }
-    }
-
-    private Event generateCreateBundleSuccessAuditEvent(String detail) {
-        return Event.builder()
-                .eventId(EventId.CREATE_BUNDLE)
-                .eventStatus(EventStatus.SUCCESS)
-                .eventPrincipal(new SystemEventPrincipal())
-                .detail(detail)
-                .build();
-    }
-
-    private Event generateCreateBundleFailureAuditEvent(String eventErrorMessage, String detail) {
-        return Event.builder()
-                .eventId(EventId.CREATE_BUNDLE)
-                .eventStatus(EventStatus.FAILURE)
-                .eventErrorMessage(eventErrorMessage)
-                .eventPrincipal(new SystemEventPrincipal())
-                .detail(detail)
-                .build();
     }
 }

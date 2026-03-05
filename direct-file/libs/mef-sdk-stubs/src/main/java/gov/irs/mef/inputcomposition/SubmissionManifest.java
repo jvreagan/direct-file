@@ -16,4 +16,8 @@ public class SubmissionManifest {
     public File getManifestFile() {
         return manifestFile;
     }
+
+    public String getXmlData() {
+        return null;
+    }
 }
